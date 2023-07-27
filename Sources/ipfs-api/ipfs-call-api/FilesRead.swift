@@ -27,8 +27,12 @@ public func FilesRead(filepath: String, range: NSRange? = nil) async throws -> D
         
         let (data ,response) = try await URLSession.shared.data(for: request)
         
-        guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+        guard let response = response as? HTTPURLResponse else {
             throw RequestError.InvalidURLResponse
+        }
+        
+        guard response.statusCode == 200 else {
+            throw RequestError.UnExpectedResponseStatus(response.statusCode, "")
         }
         
         return data

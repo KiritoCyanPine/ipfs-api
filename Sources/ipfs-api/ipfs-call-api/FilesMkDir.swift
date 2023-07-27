@@ -8,7 +8,7 @@
 import Foundation
 
 @available(macOS 12.0, *)
-public func FilesMkDir(filepath: String = "") async throws -> Data {
+public func FilesMkDir(filepath: String = "") async throws {
     let req = try LocalRequest(path: "files/mkdir")
         .set(Method: .POST)
         .set(Args: filepath)
@@ -17,12 +17,17 @@ public func FilesMkDir(filepath: String = "") async throws -> Data {
     
     do {
         let (data ,response) = try await URLSession.shared.data(for: req)
+        
         print(response, String(decoding: data, as: UTF8.self))
-        guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+        
+        guard let response = response as? HTTPURLResponse else {
             throw RequestError.InvalidURLResponse
         }
         
-        return data
+        guard response.statusCode == 200 else {
+            throw RequestError.UnExpectedResponseStatus(response.statusCode, "")
+        }
+        
     } catch {
         throw error
     }

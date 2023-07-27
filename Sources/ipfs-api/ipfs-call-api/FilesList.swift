@@ -18,8 +18,12 @@ public func FilesList(filepath: String = "") async throws -> LsFile {
     do {
         let (data ,response) = try await URLSession.shared.data(for: req)
  
-        guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+        guard let response = response as? HTTPURLResponse else {
             throw RequestError.InvalidURLResponse
+        }
+        
+        guard response.statusCode == 200 else {
+            throw RequestError.UnExpectedResponseStatus(response.statusCode, "")
         }
         
         let decoder = JSONDecoder()
@@ -28,4 +32,46 @@ public func FilesList(filepath: String = "") async throws -> LsFile {
     } catch {
         throw error
     }
+}
+
+
+public func FilesList(filepath: String = "", completion: @escaping (LsFile? , Error?) -> Void) throws {
+    let req = try LocalRequest(path: "files/ls")
+        .set(Method: .POST)
+        .set(Args: filepath)
+        .set(Options: ["l": "true"])
+        .build()
+    
+        let task = URLSession.shared.dataTask(with: req){ dataOptional, responseOptional, errorOptional in
+            if let error = errorOptional {
+                completion(nil,RequestError.InvalidRequest(error))
+                return
+            }
+            
+            guard let response = responseOptional as? HTTPURLResponse else {
+                completion(nil,RequestError.InvalidURLResponse)
+                return
+            }
+            
+            guard response.statusCode == 200 else {
+                completion(nil,RequestError.UnExpectedResponseStatus(response.statusCode, ""))
+                return
+            }
+            
+            guard let data = dataOptional else {
+                completion(nil,RequestError.InvalidURLResponse)
+                return
+            }
+        
+            do {
+                let decoder = JSONDecoder()
+                let fstat = try decoder.decode(LsFile.self, from: data)
+                
+                completion(fstat, nil)
+            } catch {
+                completion(nil, RequestError.ErrOnDecoding)
+            }
+        }
+                                                  
+        task.resume()
 }

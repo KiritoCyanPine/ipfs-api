@@ -17,8 +17,12 @@ public func GetUserDetails(user: String = "") async throws -> GithubUser {
     do {
         let (data ,response) = try await URLSession.shared.data(for: req)
         
-        guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+        guard let response = response as? HTTPURLResponse else {
             throw RequestError.InvalidURLResponse
+        }
+        
+        guard response.statusCode == 200 else {
+            throw RequestError.UnExpectedResponseStatus(response.statusCode, "")
         }
         
         let decoder = JSONDecoder()
