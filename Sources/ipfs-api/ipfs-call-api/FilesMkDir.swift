@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  FilesMkDir.swift
 //  
 //
 //  Created by Debasish Nandi on 10/07/23.
@@ -16,9 +16,7 @@ public func FilesMkDir(filepath: String = "") async throws {
         .build()
     
     do {
-        let (data ,response) = try await URLSession.shared.data(for: req)
-        
-        print(response, String(decoding: data, as: UTF8.self))
+        let (_ ,response) = try await URLSession.shared.data(for: req)
         
         guard let response = response as? HTTPURLResponse else {
             throw RequestError.InvalidURLResponse

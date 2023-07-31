@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  FilesRm.swift
 //  
 //
 //  Created by Debasish Nandi on 24/07/23.
@@ -20,9 +20,7 @@ public func FilesRm(ipfspath:String) async throws {
         .build()
     
     do {
-        let (data ,response) = try await URLSession.shared.data(for: request)
-        
-        print(response, String(decoding: data, as: UTF8.self))
+        let (_ ,response) = try await URLSession.shared.data(for: request)
         
         guard let response = response as? HTTPURLResponse else {
             throw RequestError.InvalidURLResponse
